@@ -1,45 +1,46 @@
-pipeline{
-  agent any
-  environment{
-    IMG_NAME = 'med-nginx'
-    DOCKER_REPO = 'test'
-  }
-  
-  stages{
-    stage('clean up'){
-      steps{
-        deleteDir()
-      }
-    }
+pipeline {
+    agent any
 
-    stage('Checkout SCM'){
-      steps{
-        git (
-          branch: 'main',
-          url: 'https://github.com/JasonGagnard/projet-dev01.git'
-        )
-      }
-    }
-    stage('Build'){
-      steps{
-        script {
-          sh "docker build -t ${IMG_NAME} ."
-          sh "docker tag ${IMG_NAME} ${DOCKER_REPO}:${IMG_NAME}"
+    stages {
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()
+            }
         }
-      }
-    }
 
-    stage('deploiement conteneur'){
-      steps{
-        script {
-          sh "docker image prune"
-          sh "docker stop monapp || true"
-          sh "docker rm monapp || true"
-          sh "docker run -d --name monapp --hostname monapp -p 8585:80 ${IMG_NAME}"
-          sh 'docker exec monapp "ifconfig"'
+        stage('Checkout SCM') {
+            steps {
+                git branch: 'main', credentialsId: 'id-jenkins-github', url: 'https://github.com/JasonGagnard/projet-dev01.git'
+            }
         }
-      }
-    }
 
-  }
+        stage('Build Image') {
+            steps {
+                script {
+                    sh 'docker build -t myimage_nginx .'
+                    sh 'docker tag myimage_nginx myimage_nginx:youyou'
+                }
+            }
+        }
+
+        stage('Deploy App') {
+            steps {
+                script {
+                  
+
+                    // Arrêter le conteneur s'il est en cours d'exécution
+                    sh 'docker stop monapp '
+
+                    // Supprimer le conteneur s'il existe
+                    sh 'docker rm monapp '
+
+                    // Lancer le nouveau conteneur
+                    sh 'docker run -d --name monapp --hostname monapp -p 8089:80 myimage_nginx:youyou'
+                      // Supprimer l'ancienne image si elle existe
+                    sh 'docker image rm -f myimage_nginx || true'
+                    sh 'docker exec monapp ifconfig'
+                }
+            }
+        }
+    }
 }
