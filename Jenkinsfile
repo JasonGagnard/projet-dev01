@@ -15,7 +15,7 @@ pipeline{
     stage('Checkout SCM'){
       steps{
         git (
-          branch: 'master',
+          branch: 'main',
           url: 'https://github.com/JasonGagnard/projet-dev01.git'
         )
       }
