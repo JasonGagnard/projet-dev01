@@ -32,10 +32,11 @@ pipeline{
     stage('deploiement conteneur'){
       steps{
         script {
+          sh "docker image prune"
           sh "docker stop monapp || true"
           sh "docker rm monapp || true"
           sh "docker run -d --name monapp --hostname monapp -p 8585:80 ${IMG_NAME}"
-          sh "docker exec -ti monapp "ifconfig"'
+          sh 'docker exec -ti monapp "ifconfig"'
         }
       }
     }
